@@ -160,3 +160,172 @@ function setup(){
   loadData(); setInterval(loadData,C.refreshMs||60000);
 }
 document.addEventListener("DOMContentLoaded",setup);
+// ===== TGO CUSTOMER LOGIN =====
+
+const TGO_AUTH_API = "https://script.google.com/macros/s/AKfycbxZp-5Ddxzvevy-vDRtmO6sJSB3TODo8wceRLAlaf9eK33QazCMfnItp7sxXTVI2UJs7w/exec";
+
+function tgoLoginBox() {
+  if (document.getElementById("tgo-login-box")) return;
+
+  const box = document.createElement("div");
+  box.id = "tgo-login-box";
+
+  box.innerHTML = `
+    <div style="
+      position:fixed;
+      inset:0;
+      background:#f5f6fa;
+      z-index:99999;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+    ">
+      <div style="
+        width:100%;
+        max-width:400px;
+        background:white;
+        padding:30px 24px;
+        border-radius:20px;
+        box-shadow:0 10px 40px rgba(0,0,0,.12);
+      ">
+        <div style="text-align:center;font-size:30px;font-weight:800;margin-bottom:8px;">
+          TGO FASHION
+        </div>
+
+        <div style="text-align:center;color:#777;margin-bottom:25px;">
+          Customer Login
+        </div>
+
+        <input id="tgo-email"
+          type="email"
+          placeholder="Email"
+          style="width:100%;box-sizing:border-box;padding:15px;margin-bottom:12px;border:1px solid #ddd;border-radius:12px;font-size:16px;">
+
+        <input id="tgo-password"
+          type="password"
+          placeholder="Password"
+          style="width:100%;box-sizing:border-box;padding:15px;margin-bottom:15px;border:1px solid #ddd;border-radius:12px;font-size:16px;">
+
+        <button id="tgo-login-btn"
+          style="width:100%;padding:15px;border:0;border-radius:12px;background:#111827;color:white;font-size:17px;font-weight:700;">
+          Login
+        </button>
+
+        <div id="tgo-login-msg"
+          style="text-align:center;margin-top:15px;color:#d00;font-size:14px;">
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(box);
+
+  document.getElementById("tgo-login-btn").onclick = tgoDoLogin;
+
+  document.getElementById("tgo-password").addEventListener("keydown", e => {
+    if (e.key === "Enter") tgoDoLogin();
+  });
+}
+
+function tgoGetExpiryDate(value) {
+  if (!value) return null;
+
+  const s = String(value);
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+    const [y,m,d] = s.split("-").map(Number);
+    return new Date(y, m - 1, d, 23, 59, 59);
+  }
+
+  return new Date(s);
+}
+
+async function tgoDoLogin() {
+  const email = document.getElementById("tgo-email").value.trim();
+  const password = document.getElementById("tgo-password").value;
+  const msg = document.getElementById("tgo-login-msg");
+  const btn = document.getElementById("tgo-login-btn");
+
+  if (!email || !password) {
+    msg.textContent = "Email နဲ့ Password ထည့်ပါ";
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = "Logging in...";
+  msg.textContent = "";
+
+  try {
+    const url =
+      TGO_AUTH_API +
+      "?action=login" +
+      "&email=" + encodeURIComponent(email) +
+      "&password=" + encodeURIComponent(password);
+
+    const res = await fetch(url, { cache: "no-store" });
+    const data = await res.json();
+
+    if (!data.success) {
+      msg.textContent = data.message || "Login မအောင်မြင်ပါ";
+      btn.disabled = false;
+      btn.textContent = "Login";
+      return;
+    }
+
+    localStorage.setItem("tgo_customer_login", "true");
+    localStorage.setItem("tgo_customer_email", email);
+    localStorage.setItem("tgo_customer_expiry", data.expiry || "");
+
+    document.getElementById("tgo-login-box").remove();
+
+    loadData();
+
+    tgoStartExpiryCheck();
+
+  } catch (err) {
+    console.error(err);
+    msg.textContent = "Server ချိတ်ဆက်မရပါ";
+    btn.disabled = false;
+    btn.textContent = "Login";
+  }
+}
+
+function tgoLockDashboard() {
+  localStorage.removeItem("tgo_customer_login");
+  localStorage.removeItem("tgo_customer_email");
+  localStorage.removeItem("tgo_customer_expiry");
+
+  location.reload();
+}
+
+function tgoStartExpiryCheck() {
+  setInterval(() => {
+    const expiry = localStorage.getItem("tgo_customer_expiry");
+    const d = tgoGetExpiryDate(expiry);
+
+    if (d && new Date() > d) {
+      alert("သင့် Account သက်တမ်းကုန်ဆုံးသွားပါပြီ။");
+      tgoLockDashboard();
+    }
+  }, 60000);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const loggedIn = localStorage.getItem("tgo_customer_login");
+  const expiry = localStorage.getItem("tgo_customer_expiry");
+
+  if (!loggedIn) {
+    tgoLoginBox();
+    return;
+  }
+
+  const d = tgoGetExpiryDate(expiry);
+
+  if (d && new Date() > d) {
+    tgoLockDashboard();
+    return;
+  }
+
+  tgoStartExpiryCheck();
+});
