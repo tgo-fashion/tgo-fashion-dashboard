@@ -40,7 +40,7 @@ async function fetchSheet(sheet){
 }
 
 async function loadData(){
-  setConnection(false,"ချိတ်ဆက်နေသည်…");
+if(!localStorage.getItem("tgo_customer_login")) return;  setConnection(false,"ချိတ်ဆက်နေသည်…");
   try{
     const [stock,incoming,sales,profit] = await Promise.all([
       fetchSheet(C.sheetNames.stock),
