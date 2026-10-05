@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="my">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TGO Fashion Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Myanmar:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-mark">TGO</div>
+        <div>
+          <div class="brand-name">TGO FASHION</div>
+          <div class="brand-sub">Management Dashboard</div>
+        </div>
+      </div>
+      <nav>
+        <button class="nav-btn active" data-view="dashboard">▦ <span>Dashboard</span></button>
+        <button class="nav-btn" data-view="stock">▤ <span>ပစ္စည်းစာရင်း</span></button>
+        <button class="nav-btn" data-view="sales">◫ <span>အရောင်းစာရင်း</span></button>
+        <button class="nav-btn" data-view="incoming">⇩ <span>ပစ္စည်းအဝင်</span></button>
+        <button class="nav-btn" data-view="profit">◔ <span>အမြတ်စာရင်း</span></button>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="connection-pill"><span id="connectionDot"></span><span id="connectionText">ချိတ်ဆက်နေသည်…</span></div>
+        <button class="refresh-btn" id="refreshBtn">↻ Refresh</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <button class="mobile-menu" id="mobileMenu">☰</button>
+        <div>
+          <div class="page-kicker">TGO FASHION</div>
+          <h1 id="pageTitle">Dashboard</h1>
+        </div>
+        <div class="top-actions">
+          <div class="last-updated" id="lastUpdated">—</div>
+          <button class="icon-btn" id="refreshTop">↻</button>
+        </div>
+      </header>
+
+      <section class="view active" id="view-dashboard">
+        <div class="cards">
+          <div class="card stat-card">
+            <div class="stat-icon">📦</div>
+            <div><div class="stat-label">ပစ္စည်းအမျိုးအစားစုစုပေါင်း</div><div class="stat-value" id="metricProducts">0</div></div>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-icon">🧮</div>
+            <div><div class="stat-label">လက်ကျန်ပစ္စည်းစုစုပေါင်း</div><div class="stat-value" id="metricStock">0</div></div>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-icon">💰</div>
+            <div><div class="stat-label">စုစုပေါင်းရောင်းရငွေ</div><div class="stat-value money" id="metricRevenue">0 Ks</div></div>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-icon">📈</div>
+            <div><div class="stat-label">စုစုပေါင်းအမြတ်</div><div class="stat-value money" id="metricProfit">0 Ks</div></div>
+          </div>
+          <div class="card stat-card warning-card">
+            <div class="stat-icon">⚠️</div>
+            <div><div class="stat-label">ပစ္စည်းနည်း</div><div class="stat-value" id="metricLow">0</div></div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card chart-card">
+            <div class="card-head"><div><h2>အရောင်းလမ်းကြောင်း</h2><p>နေ့အလိုက် ရောင်းရငွေ</p></div><select id="salesPeriod"><option value="30">30 ရက်</option><option value="90">90 ရက်</option><option value="365">1 နှစ်</option></select></div>
+            <div class="chart-wrap"><canvas id="salesChart"></canvas></div>
+          </div>
+          <div class="card chart-card">
+            <div class="card-head"><div><h2>အမျိုးအစားအလိုက်</h2><p>ရောင်းရငွေ</p></div></div>
+            <div class="chart-wrap"><canvas id="categoryChart"></canvas></div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-head"><div><h2>အရောင်းအများဆုံးပစ္စည်း</h2><p>အရေအတွက်အလိုက်</p></div></div>
+            <div class="rank-list" id="topProducts"></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div><h2>Stock သတိပေးချက်</h2><p>အနည်းဆုံးလက်ကျန်အောက် ရောက်နေသောပစ္စည်းများ</p></div></div>
+            <div class="table-wrap compact"><table><thead><tr><th>ပစ္စည်း</th><th>လက်ကျန်</th><th>အခြေအနေ</th></tr></thead><tbody id="lowStockTable"></tbody></table></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="view-stock">
+        <div class="section-tools">
+          <div class="search-box">⌕ <input id="stockSearch" placeholder="ပစ္စည်းရှာရန်…" /></div>
+          <select id="stockCategory"><option value="">အမျိုးအစားအားလုံး</option></select>
+        </div>
+        <div class="card table-card">
+          <div class="card-head"><div><h2>ပစ္စည်းစာရင်း</h2><p>Google Sheets ထဲက ပစ္စည်းစာရင်း</p></div><span class="count-badge" id="stockCount">0</span></div>
+          <div class="table-wrap"><table><thead><tr><th>စဉ်</th><th>ပစ္စည်းအမည်</th><th>အမျိုးအစား</th><th>အရွယ်အစား</th><th>အရောင်</th><th>ဝယ်ဈေး</th><th>လက်ကျန်</th><th>ရောင်းဈေး</th><th>အနည်းဆုံးလက်ကျန်</th><th>အခြေအနေ</th></tr></thead><tbody id="stockTable"></tbody></table></div>
+        </div>
+      </section>
+
+      <section class="view" id="view-sales">
+        <div class="section-tools">
+          <div class="search-box">⌕ <input id="salesSearch" placeholder="Customer / ပစ္စည်းရှာရန်…" /></div>
+          <input class="date-input" type="date" id="salesFrom" />
+          <input class="date-input" type="date" id="salesTo" />
+        </div>
+        <div class="card table-card">
+          <div class="card-head"><div><h2>အရောင်းစာရင်း</h2><p>ရက်စွဲ၊ Customer၊ ပစ္စည်းနှင့် အမြတ်</p></div><span class="count-badge" id="salesCount">0</span></div>
+          <div class="table-wrap"><table><thead><tr><th>ရက်စွဲ</th><th>Customer Name</th><th>ပစ္စည်းအမည်</th><th>အမျိုးအစား</th><th>အရွယ်အစား</th><th>အရောင်</th><th>ရောင်းဈေး</th><th>အရေအတွက်</th><th>စုစုပေါင်းရောင်းရငွေ</th><th>အမြတ်</th><th>မှတ်ချက်</th></tr></thead><tbody id="salesTable"></tbody></table></div>
+        </div>
+      </section>
+
+      <section class="view" id="view-incoming">
+        <div class="section-tools">
+          <div class="search-box">⌕ <input id="incomingSearch" placeholder="ပစ္စည်း / Supplier ရှာရန်…" /></div>
+        </div>
+        <div class="card table-card">
+          <div class="card-head"><div><h2>ပစ္စည်းအဝင်</h2><p>ဝင်လာသောပစ္စည်းနှင့် ကုန်ကျစရိတ်</p></div><span class="count-badge" id="incomingCount">0</span></div>
+          <div class="table-wrap"><table><thead><tr><th>ရက်စွဲ</th><th>ပစ္စည်းအမည်</th><th>အမျိုးအစား</th><th>အရွယ်အစား</th><th>အရောင်</th><th>အရေအတွက်</th><th>ဝယ်ဈေး</th><th>စုစုပေါင်းကုန်ကျစရိတ်</th><th>ပေးသွင်းသူ / မှတ်ချက်</th></tr></thead><tbody id="incomingTable"></tbody></table></div>
+        </div>
+      </section>
+
+      <section class="view" id="view-profit">
+        <div class="cards small-cards">
+          <div class="card stat-card"><div><div class="stat-label">ရောင်းရငွေ</div><div class="stat-value money" id="profitRevenue">0 Ks</div></div></div>
+          <div class="card stat-card"><div><div class="stat-label">အရင်း</div><div class="stat-value money" id="profitCost">0 Ks</div></div></div>
+          <div class="card stat-card"><div><div class="stat-label">အမြတ်</div><div class="stat-value money" id="profitTotal">0 Ks</div></div></div>
+        </div>
+        <div class="card table-card">
+          <div class="card-head"><div><h2>အမြတ်စာရင်း</h2><p>အရောင်းစာရင်းအပေါ် အခြေခံ၍ တွက်ထားသောအမြတ်</p></div></div>
+          <div class="table-wrap"><table><thead><tr><th>ရက်စွဲ</th><th>ပစ္စည်းအမည်</th><th>ရောင်းရငွေ</th><th>အရင်း</th><th>အမြတ်</th></tr></thead><tbody id="profitTable"></tbody></table></div>
+        </div>
+      </section>
+
+      <div class="toast" id="toast"></div>
+    </main>
+  </div>
+
+  <script src="./config.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
