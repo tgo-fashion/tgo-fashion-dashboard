@@ -434,7 +434,7 @@ function tgoCustomerEntry() {
 async function tgoSaveIncoming() {
 
   const email = localStorage.getItem("tgo_customer_email") || "";
-
+const password = localStorage.getItem("tgo_customer_password") || "";
   const productName =
     document.getElementById("tgoProductName").value.trim();
 
