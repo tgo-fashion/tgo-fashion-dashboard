@@ -280,7 +280,7 @@ localStorage.setItem("tgo_customer_password", password);
     document.getElementById("tgo-login-box").remove();
 
     loadData();
-
+tgoAddEntryButton();
     tgoStartExpiryCheck();
 
   } catch (err) {
