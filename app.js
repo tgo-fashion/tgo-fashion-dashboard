@@ -276,7 +276,7 @@ async function tgoDoLogin() {
     localStorage.setItem("tgo_customer_login", "true");
     localStorage.setItem("tgo_customer_email", email);
     localStorage.setItem("tgo_customer_expiry", data.expiry || "");
-
+localStorage.setItem("tgo_customer_password", password);
     document.getElementById("tgo-login-box").remove();
 
     loadData();
@@ -467,24 +467,30 @@ async function tgoSaveIncoming() {
     "https://script.google.com/macros/s/AKfycbxZp-5Ddxzvevy-vDRtmO6sJSB3TODo8wceRLAlaf9eK33QazCMfnItp7sxXTVI2UJs7w/exec";
 
 
-  const url =
-    api +
-    "?action=addIncoming" +
-    "&email=" + encodeURIComponent(email) +
-    "&productName=" + encodeURIComponent(productName) +
-    "&category=" + encodeURIComponent(category) +
-    "&size=" + encodeURIComponent(size) +
-    "&color=" + encodeURIComponent(color) +
-    "&qty=" + encodeURIComponent(qty) +
-    "&buyPrice=" + encodeURIComponent(buyPrice) +
-    "&sellPrice=" + encodeURIComponent(sellPrice);
+  const password =
+  localStorage.getItem("tgo_customer_password") || "";
 
+try {
 
-  try {
-
-    const res = await fetch(url, {
-      cache: "no-store"
-    });
+  const res = await fetch(api, {
+    method: "POST",
+    headers: {
+      "Content-Type": "text/plain;charset=utf-8"
+    },
+    body: JSON.stringify({
+      action: "addIncoming",
+      email: email,
+      password: password,
+      productName: productName,
+      category: category,
+      size: size,
+      color: color,
+      qty: qty,
+      buyPrice: buyPrice,
+      sellPrice: sellPrice
+    }),
+    cache: "no-store"
+  });
 
     const result = await res.json();
 
