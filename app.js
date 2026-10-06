@@ -155,7 +155,7 @@ function setup(){
     $("sidebar").classList.remove("open");
   }));
   $("refreshBtn").onclick=loadData; $("refreshTop").onclick=loadData;
-  $("mobileMenu").onclick=()=>$("sidebar").classList.toggle("open");
+  
   ["stockSearch","stockCategory","salesSearch","salesFrom","salesTo","incomingSearch","salesPeriod"].forEach(id=>$(id).addEventListener("input",renderAll));
   loadData(); setInterval(loadData,C.refreshMs||60000);
 }
