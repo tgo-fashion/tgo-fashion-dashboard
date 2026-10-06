@@ -329,3 +329,184 @@ document.addEventListener("DOMContentLoaded", () => {
 
   tgoStartExpiryCheck();
 });
+// ===== CUSTOMER DATA ENTRY =====
+
+function tgoCustomerEntry() {
+
+  if (document.getElementById("tgoEntryBox")) return;
+
+  const box = document.createElement("div");
+
+  box.id = "tgoEntryBox";
+
+  box.innerHTML = `
+    <div style="
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.55);
+      z-index:9999;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+    ">
+
+      <div style="
+        background:white;
+        width:100%;
+        max-width:450px;
+        border-radius:16px;
+        padding:20px;
+        box-sizing:border-box;
+      ">
+
+        <h2 style="margin-top:0">
+          ပစ္စည်းအဝင်ထည့်ရန်
+        </h2>
+
+        <input id="tgoProductName"
+          placeholder="ပစ္စည်းအမည်"
+          style="width:100%;padding:12px;margin:6px 0;box-sizing:border-box">
+
+        <input id="tgoCategory"
+          placeholder="အမျိုးအစား"
+          style="width:100%;padding:12px;margin:6px 0;box-sizing:border-box">
+
+        <input id="tgoSize"
+          placeholder="အရွယ်အစား"
+          style="width:100%;padding:12px;margin:6px 0;box-sizing:border-box">
+
+        <input id="tgoColor"
+          placeholder="အရောင်"
+          style="width:100%;padding:12px;margin:6px 0;box-sizing:border-box">
+
+        <input id="tgoQty"
+          type="number"
+          placeholder="အရေအတွက်"
+          style="width:100%;padding:12px;margin:6px 0;box-sizing:border-box">
+
+        <input id="tgoBuyPrice"
+          type="number"
+          placeholder="ဝယ်ဈေး"
+          style="width:100%;padding:12px;margin:6px 0;box-sizing:border-box">
+
+        <input id="tgoSellPrice"
+          type="number"
+          placeholder="ရောင်းဈေး"
+          style="width:100%;padding:12px;margin:6px 0;box-sizing:border-box">
+
+        <button
+          onclick="tgoSaveIncoming()"
+          style="
+            width:100%;
+            padding:13px;
+            margin-top:10px;
+            border:0;
+            border-radius:10px;
+            background:#111;
+            color:white;
+            font-size:16px;
+          ">
+          သိမ်းမည်
+        </button>
+
+        <button
+          onclick="document.getElementById('tgoEntryBox').remove()"
+          style="
+            width:100%;
+            padding:12px;
+            margin-top:8px;
+            border:1px solid #ccc;
+            border-radius:10px;
+            background:white;
+          ">
+          ပိတ်မည်
+        </button>
+
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(box);
+}
+
+
+async function tgoSaveIncoming() {
+
+  const email = localStorage.getItem("tgo_customer_email") || "";
+
+  const productName =
+    document.getElementById("tgoProductName").value.trim();
+
+  const category =
+    document.getElementById("tgoCategory").value.trim();
+
+  const size =
+    document.getElementById("tgoSize").value.trim();
+
+  const color =
+    document.getElementById("tgoColor").value.trim();
+
+  const qty =
+    document.getElementById("tgoQty").value;
+
+  const buyPrice =
+    document.getElementById("tgoBuyPrice").value;
+
+  const sellPrice =
+    document.getElementById("tgoSellPrice").value;
+
+
+  if (!productName || !qty) {
+    alert("ပစ္စည်းအမည်နဲ့ အရေအတွက် ထည့်ပါ");
+    return;
+  }
+
+
+  const api =
+    "https://script.google.com/macros/s/AKfycbxZp-5Ddxzvevy-vDRtmO6sJSB3TODo8wceRLAlaf9eK33QazCMfnItp7sxXTVI2UJs7w/exec";
+
+
+  const url =
+    api +
+    "?action=addIncoming" +
+    "&email=" + encodeURIComponent(email) +
+    "&productName=" + encodeURIComponent(productName) +
+    "&category=" + encodeURIComponent(category) +
+    "&size=" + encodeURIComponent(size) +
+    "&color=" + encodeURIComponent(color) +
+    "&qty=" + encodeURIComponent(qty) +
+    "&buyPrice=" + encodeURIComponent(buyPrice) +
+    "&sellPrice=" + encodeURIComponent(sellPrice);
+
+
+  try {
+
+    const res = await fetch(url, {
+      cache: "no-store"
+    });
+
+    const result = await res.json();
+
+    if (result.success) {
+
+      alert("ပစ္စည်းအဝင် သိမ်းပြီးပါပြီ ✅");
+
+      document.getElementById("tgoEntryBox").remove();
+
+      loadData();
+
+    } else {
+
+      alert(result.message || "သိမ်းမရပါ");
+
+    }
+
+  } catch (err) {
+
+    console.error(err);
+
+    alert("Server နဲ့ ချိတ်မရပါ");
+
+  }
+}
