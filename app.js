@@ -516,3 +516,32 @@ try {
 
   }
 }
+function tgoAddEntryButton() {
+
+  if (!localStorage.getItem("tgo_customer_login")) return;
+
+  if (document.getElementById("tgoEntryButton")) return;
+
+  const btn = document.createElement("button");
+
+  btn.id = "tgoEntryButton";
+  btn.textContent = "＋ ပစ္စည်းအဝင်ထည့်ရန်";
+
+  btn.style.cssText = `
+    position:fixed;
+    right:20px;
+    bottom:20px;
+    z-index:9998;
+    padding:14px 20px;
+    border:0;
+    border-radius:12px;
+    background:#111;
+    color:white;
+    font-size:16px;
+    box-shadow:0 4px 15px rgba(0,0,0,.2);
+  `;
+
+  btn.onclick = tgoCustomerEntry;
+
+  document.body.appendChild(btn);
+}
